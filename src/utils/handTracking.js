@@ -10,8 +10,7 @@ export async function setupHandTracking(video, canvas) {
   //   window.hands.HAND_CONNECTIONS -> constant array
 
   const hands = new window.hands.Hands({
-    // locateFile not needed as we loaded the full bundle via CDN
-    locateFile: () => '',
+    locateFile: () => 'https://unpkg.com/@mediapipe/hands@0.4.1675469240/',
   })
 
   const drawing = new window.drawingUtils.DrawingUtils(canvas.getContext('2d'))
