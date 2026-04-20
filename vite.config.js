@@ -7,5 +7,8 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  publicDir: 'public'
+  publicDir: 'public',
+  optimizeDeps: {
+    include: ['@mediapipe/hands', '@mediapipe/drawing_utils']
+  }
 })
