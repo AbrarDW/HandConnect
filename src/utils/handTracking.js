@@ -1,120 +1,101 @@
-// Hand Tracking utility using MediaPipe
+// Hand Tracking utility using MediaPipe loaded from CDN
 export async function setupHandTracking(video, canvas) {
   let isRunning = false
   let animationId = null
   let lastTime = 0
 
-  // Load MediaPipe Hands
-  const mpHands = await import('@mediapipe/hands')
-  const mpDraw = await import('@mediapipe/drawing_utils')
+  // The CDN scripts expose these globals:
+  //   window.hands      -> MediaPipe Hands solution
+  //   window.drawingUtils -> drawing utilities
+  //   window.hands.HAND_CONNECTIONS -> constant
 
-  const hands = new mpHands.Hands({
-    locateFile: (file) => {
-      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-    }
+  const hands = new window.hands.Hands({
+    // locateFile not needed as we loaded the full bundle via CDN
+    locateFile: () => '',
   })
 
-  const handDrawing = new mpDraw.DrawingUtils()
+  const drawing = new window.drawingUtils.DrawingUtils(canvas.getContext('2d'))
 
   hands.setOptions({
     maxNumHands: 2,
     modelComplexity: 1,
     minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
+    minTrackingConfidence: 0.5,
   })
 
-  function drawHand(results, canvas, ctx) {
+  function drawHand(results, ctx) {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
-    // Draw neon effect background
+
+    // faint background grid (optional)
     ctx.strokeStyle = 'rgba(131, 56, 236, 0.1)'
     ctx.lineWidth = 2
     ctx.strokeRect(0, 0, canvas.width, canvas.height)
-    
+
     if (results.multiHandLandmarks) {
       for (const landmarks of results.multiHandLandmarks) {
-        // Draw neon connections
-        ctx.strokeStyle = '#8338ec'
-        ctx.lineWidth = 3
-        ctx.shadowColor = '#8338ec'
-        ctx.shadowBlur = 10
-        
-        // Draw hand connections
-        handDrawing.drawConnectors(ctx, landmarks, mpHands.HAND_CONNECTIONS, {
+        // connections
+        drawing.drawConnectors(ctx, landmarks, window.hands.HAND_CONNECTIONS, {
           color: '#8338ec',
-          lineWidth: 3
+          lineWidth: 3,
         })
-        
-        // Draw glowing landmarks
-        ctx.fillStyle = '#ff006e'
-        ctx.shadowColor = '#ff006e'
-        ctx.shadowBlur = 15
-        handDrawing.drawLandmarks(ctx, landmarks, {
+        // landmarks
+        drawing.drawLandmarks(ctx, landmarks, {
           color: '#ff006e',
-          lineWidth: 2
+          lineWidth: 2,
         })
-        
-        // Draw palm center
-        const palmCenter = landmarks[9] // Middle finger base
+
+        // palm centre glow
+        const palm = landmarks[9] // middle finger base
         ctx.fillStyle = '#3a86ff'
         ctx.shadowColor = '#3a86ff'
         ctx.shadowBlur = 20
         ctx.beginPath()
-        ctx.arc(
-          palmCenter.x * canvas.width,
-          palmCenter.y * canvas.height,
-          8,
-          0,
-          2 * Math.PI
-        )
+        ctx.arc(palm.x * canvas.width, palm.y * canvas.height, 8, 0, Math.PI * 2)
         ctx.fill()
       }
     }
-    
-    // Reset shadow
     ctx.shadowBlur = 0
   }
 
-  function processFrame(currentTime) {
+  function processFrame(now) {
     if (!isRunning) return
-    
-    const deltaTime = currentTime - lastTime
-    if (deltaTime >= 16) { // ~60 FPS
-      lastTime = currentTime
-      animationId = requestAnimationFrame(processFrame)
+    const delta = now - lastTime
+    if (delta >= 16) { // ~60 FPS
+      lastTime = now
+      animationId = requestAnimationFrame(() => processFrame(now))
     }
+    // Send current video frame to MediaPipe
+    hands.send({ image: video })
   }
 
   return {
-    start: () => {
+    start() {
       isRunning = true
       lastTime = performance.now()
-      animationId = requestAnimationFrame(processFrame)
-      
+      animationId = requestAnimationFrame(t => processFrame(t))
+
       hands.onResults((results) => {
         if (canvas && canvas.getContext) {
           const ctx = canvas.getContext('2d')
-          drawHand(results, canvas, ctx)
+          drawHand(results, ctx)
         }
       })
-      
-      hands.send({ image: video })
     },
-    
-    stop: () => {
+
+    stop() {
       isRunning = false
       if (animationId) {
         cancelAnimationFrame(animationId)
         animationId = null
       }
     },
-    
-    reset: () => {
+
+    reset() {
       if (canvas && canvas.getContext) {
         const ctx = canvas.getContext('2d')
         ctx.clearRect(0, 0, canvas.width, canvas.height)
       }
-    }
+    },
   }
 }
