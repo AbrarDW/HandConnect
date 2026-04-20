@@ -12,9 +12,12 @@
 
     <!-- MediaPipe bundles from unpkg CDN -->
     <script src="https://unpkg.com/@mediapipe/hands/hands.js"></script>
+    <script>
+      console.log('After hands script:', window.hands);
+    </script>
     <script src="https://unpkg.com/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script>
-      console.log('MediaPipe loaded:', window.hands, window.drawingUtils);
+      console.log('After drawing_utils script:', window.drawingUtils);
     </script>
 
     <script type="module" src="/src/main.js"></script>
