@@ -7,7 +7,7 @@ export async function setupHandTracking(video, canvas) {
   // The CDN scripts expose these globals:
   //   window.hands      -> MediaPipe Hands solution
   //   window.drawingUtils -> drawing utilities
-  //   window.hands.HAND_CONNECTIONS -> constant
+  //   window.hands.HAND_CONNECTIONS -> constant array
 
   const hands = new window.hands.Hands({
     // locateFile not needed as we loaded the full bundle via CDN
