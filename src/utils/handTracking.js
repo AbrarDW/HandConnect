@@ -5,15 +5,15 @@ export async function setupHandTracking(video, canvas) {
   let lastTime = 0
 
   // The CDN scripts expose these globals:
-  //   window.hands      -> MediaPipe Hands solution
-  //   window.drawingUtils -> drawing utilities
-  //   window.hands.HAND_CONNECTIONS -> constant array
+  //   window.Hands      -> MediaPipe Hands solution
+  //   window.DrawingUtils -> drawing utilities
+  //   window.HAND_CONNECTIONS -> constant array
 
-  const hands = new window.hands.Hands({
+  const hands = new window.Hands({
     locateFile: () => 'https://unpkg.com/@mediapipe/hands@0.4.1675469240/',
   })
 
-  const drawing = new window.drawingUtils.DrawingUtils(canvas.getContext('2d'))
+  const drawing = new window.DrawingUtils(canvas.getContext('2d'))
 
   hands.setOptions({
     maxNumHands: 2,
@@ -34,7 +34,7 @@ export async function setupHandTracking(video, canvas) {
     if (results.multiHandLandmarks) {
       for (const landmarks of results.multiHandLandmarks) {
         // connections
-        drawing.drawConnectors(ctx, landmarks, window.hands.HAND_CONNECTIONS, {
+        drawing.drawConnectors(ctx, landmarks, window.HAND_CONNECTIONS, {
           color: '#8338ec',
           lineWidth: 3,
         })

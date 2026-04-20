@@ -11,13 +11,18 @@
     <div id="app"></div>
 
     <!-- MediaPipe bundles from unpkg CDN -->
-    <script src="https://unpkg.com/@mediapipe/hands/hands.js"></script>
-    <script>
-      console.log('After hands script:', window.hands);
-    </script>
-    <script src="https://unpkg.com/@mediapipe/drawing_utils/drawing_utils.js"></script>
-    <script>
-      console.log('After drawing_utils script:', window.drawingUtils);
+    <script src="https://unpkg.com/@mediapipe/hands/hands.js" defer></script>
+    <script src="https://unpkg.com/@mediapipe/drawing_utils/drawing_utils.js" defer></script>
+    <script defer>
+      // Initialize MediaPipe Hands and expose on window
+      const hands = new Hands({
+        locateFile: (file) => `https://unpkg.com/@mediapipe/hands@0.4.1675469240/${file}`,
+      });
+      window.hands = hands;
+
+      // Expose drawing utils
+      const drawingUtils = new DrawingUtils();
+      window.drawingUtils = drawingUtils;
     </script>
 
     <script type="module" src="/src/main.js"></script>
